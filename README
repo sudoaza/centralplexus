@@ -1,0 +1,12 @@
+# Central Plexus interconects hacklabs
+
+Central Plexus interconects hacklabs through the cyberspatial dimention
+reshaping the emotional geography.
+
+## Installation
+
+    npm install irc
+
+## Run
+
+    node cp.js
