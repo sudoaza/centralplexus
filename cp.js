@@ -3,6 +3,8 @@ var irc = require('irc');
 channel = '#centralplexus';
 var quienes = [];
 var dondes = [];
+var confiables = ['azarch']; // En quien confio?
+
 var aca = 'En algn lugar del mundo';
 var nos = 'cp3';
 
@@ -21,7 +23,7 @@ var quitar = function(quien) {
 }
 
 var confio = function(user) {
-  return false;
+  return (confiables.indexOf(user) >= 0);
 }
 
 var lo_tengo = function(user) {
