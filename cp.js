@@ -25,7 +25,7 @@ var confio = function(user) {
 }
 
 var lo_tengo = function(user) {
-  return quienes.indexOf(user) >= 0;
+  return (quienes.indexOf(user) >= 0);
 }
 
 var decir_donde_estamos = function(quien) {
@@ -49,10 +49,10 @@ var preguntar_donde_estan = function(quien) {
 
 var saludar = function(quien) {
   preguntar_quienes_estan(quien);
-  if ( confio(quien) && !lo_tengo(quien)) {
+  if (confio(quien))
     decir_donde_estamos(quien);
-  }
-  preguntar_donde_estan(quien);
+  if (!lo_tengo(quien))
+    preguntar_donde_estan(quien);
 }
 
 var join = function(quien, msg) {
@@ -134,7 +134,8 @@ var pv_commands = {
   'estan': function() {
     from = params.shift();
     params.forEach(function(quien) {
-      if (quien.trim() != '' && !lo_tengo(quien) && quien != nos) {
+      quien = quien.trim();
+      if (quien != '' && !lo_tengo(quien) && quien != nos) {
         saludar(quien);
       }
     });  
