@@ -56,15 +56,13 @@ var saludar = function(quien) {
     decir_donde_estamos(quien);
   if (!lo_tengo(quien))
     preguntar_donde_estan(quien);
-
-  preguntar_quienes_estan(quien);
 }
 
 var join = function(quien, msg) {
   if ( quien == nos ) {
     decir_hola(channel);
-  } else if ( confio(quien) ) {
-    decir_donde_estamos(quien);
+  } else {
+    saludar(quien);
   }
 }
 
@@ -151,6 +149,7 @@ var commands = {
     } else {
       if ( aquien.trim() == nos ) {
         saludar(from);
+        preguntar_quienes_estan(from);
       }
     }
   },
