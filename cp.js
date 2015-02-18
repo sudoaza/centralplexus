@@ -1,14 +1,14 @@
 var irc = require('irc');
 
-channel = '#centralplexus';
+channel = '#lab';
 var quienes = []; // Que me estoy comunicando
 var dondes = []; // Medio
-var confiables = ['azarch','fauno','cp1']; // Contactos previos
-var otros = ['cp2']; // Contactos que estoy evaluando
-var contactos = [['cp1','fauno']]; // Contactos compartidos
+var confiables = ['azarch','fauno','bazza']; // Contactos previos
+var otros = []; // Contactos que estoy evaluando
+var contactos = []; // Contactos compartidos
 
-var aca = 'En algn lugar del mundo';
-var nos = 'cp2';
+var aca = 'No tengo camarita';
+var nos = 'stiuso';
 
 var client = new irc.Client('irc.hackcoop.com.ar', nos, {
     channels: [channel],
@@ -112,6 +112,11 @@ var confiar_en = function(quien) {
 // returns bool
 var confia_a_en_b = function(a, b) {
   i = otros.indexOf(b);
+  if ( i < 0 ) {
+    otros.push(b);
+    contactos.push([]);
+    return false;
+  }
   return contactos[i].indexOf(a) >= 0
 }
 
