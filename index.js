@@ -2,6 +2,10 @@ var express = require('express'), app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var path = require('path');
+var fs = require('fs');
+
+// Aca incluimos todo lo del IRC
+eval(fs.readFileSync('cp.js')+'');
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -10,8 +14,14 @@ app.get('/', function(req, res){
 });
 
 io.on('connection', function(socket){
-  socket.on('chat message', function(msg){
-    io.emit('chat message', msg);
+  socket.on('config',function(c){
+    console.log('**CONFIG**',c);
+    configurar(c);
+    var client = conectar();
+  });
+
+  socket.on('chat message', function(p){
+    decir(p.to,p.msg);
   });
 });
 

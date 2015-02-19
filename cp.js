@@ -1,22 +1,46 @@
 var irc = require('irc');
+var channel = '';
+var quienes = [];               // Que me estoy comunicando
+var dondes = [];                // Medio
+var confiables = [];  // Contactos previos
+var otros = [];                 // Contactos que estoy evaluando
+var contactos = [];             // Contactos compartidos
+var aca = nos = '';
 
-channel = '#lab';
-var quienes = []; // Que me estoy comunicando
-var dondes = []; // Medio
-var confiables = ['azarch','fauno','bazza']; // Contactos previos
-var otros = []; // Contactos que estoy evaluando
-var contactos = []; // Contactos compartidos
+var configurar = function(c) {
+  channel = c.channels.shift();
+  confiables = c.confiables;
+  aca = c.aca;
+  nos = c.nos;
+}
 
-var aca = 'No tengo camarita';
-var nos = 'stiuso';
-
-var client = new irc.Client('irc.hackcoop.com.ar', nos, {
+var conectar = function() { 
+  client = new irc.Client('irc.hackcoop.com.ar', nos, {
     channels: [channel],
     port: 6697,
     secure: true,
     showErrors: true,
     selfSigned: true,   
-});
+  });
+
+  client.addListener('message'+channel, function (from, message) {
+    call(commands, from, message);
+  });
+
+  client.addListener('pm', function(from, message){
+    call(pv_commands, from, message);
+  });
+
+  client.addListener('join'+channel, function (from, message) {
+    join(from, message);
+  });
+
+  client.addListener('error', function(message) {
+      console.log('error: ', message);
+  });
+
+  return client;
+}
 
 var quitar = function(quien) {
     i = quienes.indexOf(quien);
@@ -32,23 +56,31 @@ var lo_tengo = function(user) {
   return (quienes.indexOf(user) >= 0);
 }
 
+var decir = function(quien, que) {
+  client.say(quien,que); 
+  console.log('TO:'+quien+' -'+que);
+  io.emit('chat message', {from: nos, msg: que, to: quien});
+}
+
+var recibir = function(de, para, msg) {
+  console.log('FROM:'+de+' TO:'+para+' -'+msg);
+  io.emit('chat message', {from: de, msg: msg, to: para});
+}
+
 var decir_donde_estamos = function(quien) {
-  client.say(quien, 'aca estamos,' + aca);
-  console.log('TO:'+quien+" -aca estamos, "+aca);
+  decir(quien, 'aca estamos, '+aca);
 }
 
 var decir_chau = function(quien) {
   if ( quien == channel ) {
-    client,say(channel, 'chau');
+    decir(channel, 'chau');
   } else {
-    client.say(channel, 'chau, '+quien);
-    console.log("chau, "+quien);
+    decir(channel, 'chau, '+quien);
   }
 }
 
 var preguntar_donde_estan = function(quien) {
-  client.say(quien, 'donde estan?');
-  console.log('TO:'+quien+' -donde estan?');
+  decir(quien, 'donde estan?');
 }
 
 var saludar = function(quien) {
@@ -75,33 +107,33 @@ var aca_estan = function(quien, donde) {
 }
 
 var vo_quien_so = function(quien) {
-  client.say(quien, 'vo quien so?');
-  console.log("TO:"+quien+" -vo quien so?");
+  decir(quien, 'vo quien so?');
 }
 
 var decir_hola = function(quien) {
   if ( quien == channel ) {
-    client.say(channel, 'hola');
-    console.log('hola');
+    decir(channel, 'hola');
   } else {
-    client.say(channel, 'hola, '+quien);
-    console.log('hola, '+quien);
+    decir(channel, 'hola, '+quien);
   }
 }
 
 var preguntar_quienes_estan = function(quien) {
-  client.say(quien, 'quienes estan?');
-  console.log('TO:'+quien+' -quienes estan?');
+  decir(quien, 'quienes estan?');
 }
 
 var quien_conozco = function(quien) {
-  client.say(quien, 'conozco, '+ quienes.join(', '));
-  console.log('TO:'+quien+' -conozco, '+quienes.join(', '));
+  decir(quien, 'conozco, '+ quienes.join(', '));
+}
+
+var preguntar_por_conocidos = function(a_quien) {
+  quienes.forEach(function(quien) {
+    preguntar_por(a_quien,quien);
+  });
 }
 
 var preguntar_por = function(a, por) {
-  client.say(a, 'conoces a, '+por+'?');
-  console.log('TO:'+a+' -conoces a, '+por+'?');
+  decir(a, 'conoces a, '+por+'?');
 }
 
 var confiar_en = function(quien) {
@@ -172,8 +204,7 @@ var pv_commands = {
   },
   'quienes_estan': function() {
     from = params.shift();
-    client.say(from, 'estan, ' + quienes.join(', '))
-    console.log('FROM:'+from+" -quienes estan?",quienes, dondes);
+    decir(from, 'estan, ' + quienes.join(', '))
   }, 
   'estan': function() {
     from = params.shift();
@@ -192,6 +223,7 @@ var pv_commands = {
   'vo_quien_so': function() {
     from = params.shift();
     quien_conozco(from);
+    preguntar_por_conocidos(from);
   },
   'conozco': function() {
     from = params.shift();
@@ -206,8 +238,7 @@ var pv_commands = {
     from = params.shift();
     quien = params.shift().trim();
     if ( confio(quien) ) {
-      client.say(from, 'es wey, '+quien);
-      console.log('TO:'+from+' -es wey, '+quien);
+      decir(from, 'es wey, '+quien);
     }
   },
   'es_wey': function() {
@@ -230,18 +261,3 @@ var call = function(coms, from, msg) {
   }
 }
 
-client.addListener('message'+channel, function (from, message) {
-  call(commands, from, message)
-});
-
-client.addListener('pm', function(from, message){
-  call(pv_commands, from, message);
-});
-
-client.addListener('join'+channel, function (from, message) {
-  join(from, message);
-});
-
-client.addListener('error', function(message) {
-    console.log('error: ', message);
-});
