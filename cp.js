@@ -103,6 +103,7 @@ var aca_estan = function(quien, donde) {
     quitar(quien);
   quienes.push(quien);
   dondes.push(donde);
+  io.emit('estan', {quien: quien, donde: donde});
   console.log(quien + " estan en " + donde);
 }
 
@@ -249,11 +250,11 @@ var pv_commands = {
 };
 
 var tokenize = function(str) {
-  return str.trim().replace(/\s/gi,'_').toLowerCase();
+  return str.trim().replace(/\s/gi,'_').replace('?','').toLowerCase();
 }
 
 var call = function(coms, from, msg) {
-  params = msg.split(/[,\?\(]/);
+  params = msg.split(/[,]/);
   com = tokenize(params.shift());
   params.unshift(from);
   if ( typeof coms[com] === 'function' ) {
