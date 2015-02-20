@@ -25,10 +25,12 @@ var conectar = function() {
 
   client.addListener('message'+channel, function (from, message) {
     call(commands, from, message);
+    recibir(from,channel,message);
   });
 
   client.addListener('pm', function(from, message){
     call(pv_commands, from, message);
+    recibir(from,nos,message);
   });
 
   client.addListener('join'+channel, function (from, message) {
@@ -86,7 +88,7 @@ var preguntar_donde_estan = function(quien) {
 var saludar = function(quien) {
   if (confio(quien))
     decir_donde_estamos(quien);
-  if (!lo_tengo(quien))
+  if (!lo_tengo(quien) && confio(quien))
     preguntar_donde_estan(quien);
 }
 
